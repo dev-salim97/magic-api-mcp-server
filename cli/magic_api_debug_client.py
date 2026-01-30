@@ -31,6 +31,10 @@ import requests
 import threading
 import time
 import sys
+
+from magicapi_mcp.settings import MagicAPISettings
+from magicapi_tools.utils.http_client import MagicAPIHTTPClient
+
 try:
     import readline
 except ImportError:
@@ -185,6 +189,15 @@ class MagicAPIDebugClient:
         self.breakpoint_hit = asyncio.Event()  # 断点触发事件
         self.breakpoint_data = None  # 当前断点信息
         self.waiting_for_resume = False  # 是否等待恢复命令
+        
+        # 初始化 HTTP Client
+        self.settings = MagicAPISettings(
+            base_url=api_base_url,
+            username=username,
+            password=password
+        )
+        self.http_client = MagicAPIHTTPClient(self.settings)
+        self.session = self.http_client.session
 
     def _generate_client_id(self):
         """生成随机client_id，格式与服务器期望的一致（16字符十六进制）"""
@@ -448,7 +461,7 @@ class MagicAPIDebugClient:
         headers = {
             "Magic-Request-Client-Id": self.client_id,
             "Magic-Request-Script-Id": script_id,
-            "magic-token": "unauthorization",
+            # "magic-token": "unauthorization", # Removed: let session handle it
             "Accept": "application/json, text/plain, */*",
             "Content-Type": "application/x-www-form-urlencoded",
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
@@ -498,17 +511,16 @@ class MagicAPIDebugClient:
             """在后台线程中执行HTTP请求"""
             try:
                 print("🔄 发送调试请求...")
-                if method.upper() == "GET":
-                    response = requests.get(url, params=params, headers=headers, timeout=300)
-                elif method.upper() == "POST":
-                    response = requests.post(url, json=data, params=params, headers=headers, timeout=300)
-                elif method.upper() == "PUT":
-                    response = requests.put(url, json=data, params=params, headers=headers, timeout=300)
-                elif method.upper() == "DELETE":
-                    response = requests.delete(url, params=params, headers=headers, timeout=300)
-                else:
-                    print(f"❌ 不支持的HTTP方法: {method}")
-                    return
+                
+                # 使用 self.session 发送请求
+                response = self.session.request(
+                    method=method,
+                    url=url,
+                    params=params,
+                    json=data if method.upper() in ["POST", "PUT"] else None,
+                    headers=headers,
+                    timeout=300
+                )
 
                 print(f"📊 响应状态: {response.status_code}")
                 if response.status_code == 200:
@@ -585,16 +597,15 @@ class MagicAPIDebugClient:
         def http_request():
             """在后台线程中执行HTTP请求"""
             try:
-                if method.upper() == "GET":
-                    return requests.get(url, params=params, headers=headers, timeout=timeout)
-                elif method.upper() == "POST":
-                    return requests.post(url, json=data, params=params, headers=headers, timeout=timeout)
-                elif method.upper() == "PUT":
-                    return requests.put(url, json=data, params=params, headers=headers, timeout=timeout)
-                elif method.upper() == "DELETE":
-                    return requests.delete(url, params=params, headers=headers, timeout=timeout)
-                else:
-                    raise ValueError(f"不支持的HTTP方法: {method}")
+                # 使用 self.session 发送请求，以利用共享的认证状态
+                return self.session.request(
+                    method=method,
+                    url=url,
+                    params=params,
+                    json=data if method.upper() in ["POST", "PUT"] else None,
+                    headers=headers,
+                    timeout=timeout
+                )
             except Exception as e:
                 # 重新抛出异常，让调用方处理
                 raise e
@@ -619,7 +630,6 @@ class MagicAPIDebugClient:
         default_headers = {
             "Magic-Request-Client-Id": self.client_id,
             "Magic-Request-Script-Id": "python_client_call",
-            "magic-token": "unauthorization",
             "Accept": "application/json, text/plain, */*",
             "Content-Type": "application/x-www-form-urlencoded",
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
@@ -640,17 +650,14 @@ class MagicAPIDebugClient:
             print(f"  请求体: {data}")
 
         try:
-            if method.upper() == "GET":
-                response = requests.get(url, params=params, headers=default_headers, timeout=10)
-            elif method.upper() == "POST":
-                response = requests.post(url, json=data, params=params, headers=default_headers, timeout=10)
-            elif method.upper() == "PUT":
-                response = requests.put(url, json=data, params=params, headers=default_headers, timeout=10)
-            elif method.upper() == "DELETE":
-                response = requests.delete(url, params=params, headers=default_headers, timeout=10)
-            else:
-                print(f"❌ 不支持的HTTP方法: {method}")
-                return None
+            response = self.session.request(
+                method=method,
+                url=url,
+                params=params,
+                json=data if method.upper() in ["POST", "PUT"] else None,
+                headers=default_headers,
+                timeout=10
+            )
 
             print(f"📊 响应状态: {response.status_code}")
             print(f"📄 响应内容: {response.text}")

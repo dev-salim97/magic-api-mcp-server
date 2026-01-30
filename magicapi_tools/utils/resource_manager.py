@@ -748,7 +748,6 @@ class MagicAPIResourceManager:
             http_client: MagicAPIHTTPClient 实例，如果不提供则创建新的实例
         """
         self.base_url = base_url.rstrip('/')
-        self.session = requests.Session()
         self.username = username
         self.password = password
 
@@ -757,22 +756,32 @@ class MagicAPIResourceManager:
             self.http_client = http_client
         else:
             # 创建默认的 HTTP 客户端
-            settings = MagicAPISettings(
-                base_url=base_url,
-                username=username,
-                password=password
-            )
+            # 使用 from_env 创建配置，确保所有字段都有值
+            env_config = {
+                "MAGIC_API_BASE_URL": base_url,
+            }
+            if username:
+                env_config["MAGIC_API_USERNAME"] = username
+            if password:
+                env_config["MAGIC_API_PASSWORD"] = password
+                
+            settings = MagicAPISettings.from_env(env_config)
             self.http_client = MagicAPIHTTPClient(settings=settings)
+
+        # 使用 http_client 的 session，确保共享认证状态（包括 cookie 和 token）
+        self.session = self.http_client.session
 
         # 设置默认请求头
         self.session.headers.update({
-            'Content-Type': 'application/json',
             'Accept': 'application/json'
         })
 
         # 如果提供了认证信息，进行登录
+        # 注意：如果 http_client 已经登录过，这里再次登录会刷新 token
         if username and password:
-            self.login()
+            # 检查是否已经有 token，避免重复登录
+            if not self.session.headers.get("magic-token"):
+                self.login()
 
     def login(self):
         """登录认证"""
@@ -780,9 +789,21 @@ class MagicAPIResourceManager:
             'username': self.username,
             'password': self.password
         }
-        response = self.session.post(f"{self.base_url}/magic/web/login", json=login_data)
+        response = self.session.post(f"{self.base_url}/login", data=login_data)
         if response.status_code == 200:
-            print("✅ 登录成功")
+            # 尝试从响应头获取 token
+            try:
+                data = response.json()
+                if data.get("code") == 1:
+                    print("✅ 登录成功")
+                    token = response.headers.get("magic-token")
+                    if token:
+                        self.session.headers["magic-token"] = token
+                        print(f"🔑 获取到Token: {token[:10]}...")
+                    return
+            except Exception:
+                pass
+            print("✅ 登录成功 (HTTP 200)")
         else:
             print(f"❌ 登录失败: {response.text}")
 
@@ -834,7 +855,7 @@ class MagicAPIResourceManager:
         try:
             print(f"📝 {operation}分组请求数据: {group_data}")
             response = self.session.post(
-                f"{self.base_url}/magic/web/resource/folder/save",
+                f"{self.base_url}/resource/folder/save",
                 json=group_data
             )
 
@@ -902,12 +923,11 @@ class MagicAPIResourceManager:
             # 使用与移动API相同的headers格式
             copy_headers = {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept': 'application/json, text/plain, */*',
-                'magic-token': 'unauthorization'
+                'Accept': 'application/json, text/plain, */*'
             }
 
             response = self.session.post(
-                f"{self.base_url}/magic/web/resource/folder/copy",
+                f"{self.base_url}/resource/folder/copy",
                 data={
                     'src': src_group_id,
                     'target': target_parent_id
@@ -1003,12 +1023,11 @@ class MagicAPIResourceManager:
         try:
             delete_headers = {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept': 'application/json, text/plain, */*',
-                'magic-token': 'unauthorization'
+                'Accept': 'application/json, text/plain, */*'
             }
 
             response = self.session.post(
-                f"{self.base_url}/magic/web/resource/delete",
+                f"{self.base_url}/resource/delete",
                 data={'id': resource_id},
                 headers=delete_headers
             )
@@ -1052,12 +1071,11 @@ class MagicAPIResourceManager:
             # 尝试移动资源（使用form-urlencoded格式，与curl命令一致）
             move_headers = {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept': 'application/json, text/plain, */*',
-                'magic-token': 'unauthorization'
+                'Accept': 'application/json, text/plain, */*'
             }
 
             response = self.session.post(
-                f"{self.base_url}/magic/web/resource/move",
+                f"{self.base_url}/resource/move",
                 data={
                     'src': src_id,
                     'groupId': target_group_id
@@ -1101,7 +1119,7 @@ class MagicAPIResourceManager:
         """
         try:
             print(f"📋 获取资源树...")
-            response = self.session.post(f"{self.base_url}/magic/web/resource")
+            response = self.session.post(f"{self.base_url}/resource")
 
             print(f"📊 响应状态: {response.status_code}")
 
@@ -1137,7 +1155,7 @@ class MagicAPIResourceManager:
             文件详情数据，失败返回None
         """
         try:
-            response = self.session.get(f"{self.base_url}/magic/web/resource/file/{file_id}")
+            response = self.session.get(f"{self.base_url}/resource/file/{file_id}")
 
             if response.status_code == 200:
                 result = response.json()
@@ -1153,7 +1171,7 @@ class MagicAPIResourceManager:
             else:
                 print(f"❌ 请求失败: {response.status_code} - {response.text}")
                 print(f"   文件ID: {file_id}")
-                print(f"   请求URL: {self.base_url}/magic/web/resource/file/{file_id}")
+                print(f"   请求URL: {self.base_url}/resource/file/{file_id}")
                 print(f"   响应头: {dict(response.headers)}")
         except Exception as e:
             print(f"❌ 获取文件详情时出错: {e}")
@@ -1177,12 +1195,11 @@ class MagicAPIResourceManager:
         try:
             lock_headers = {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept': 'application/json, text/plain, */*',
-                'magic-token': 'unauthorization'
+                'Accept': 'application/json, text/plain, */*'
             }
 
             response = self.session.post(
-                f"{self.base_url}/magic/web/resource/lock",
+                f"{self.base_url}/resource/lock",
                 data={'id': resource_id},
                 headers=lock_headers
             )
@@ -1215,12 +1232,11 @@ class MagicAPIResourceManager:
         try:
             unlock_headers = {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept': 'application/json, text/plain, */*',
-                'magic-token': 'unauthorization'
+                'Accept': 'application/json, text/plain, */*'
             }
 
             response = self.session.post(
-                f"{self.base_url}/magic/web/resource/unlock",
+                f"{self.base_url}/resource/unlock",
                 data={'id': resource_id},
                 headers=unlock_headers
             )
@@ -1373,7 +1389,7 @@ class MagicAPIResourceManager:
             }
 
             # 如果是更新操作，添加到URL中
-            url = f"{self.base_url}/magic/web/resource/file/api/save"
+            url = f"{self.base_url}/resource/file/api/save"
  
             # 使用application/json类型发送完整的API对象
             response = self.session.post(
@@ -1607,7 +1623,7 @@ class MagicAPIResourceManager:
             }
 
             # 如果是更新操作，添加到URL中
-            url = f"{self.base_url}/magic/web/resource/file/api/save"
+            url = f"{self.base_url}/resource/file/api/save"
 
 
             # 使用application/json类型发送完整的API对象

@@ -7,119 +7,30 @@ import argparse
 import json
 import os
 import sys
-from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional
 
 import requests
 
+# Ensure magicapi_tools can be imported
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-def _get_env(env: Mapping[str, str], key: str, default: str) -> str:
-    return env.get(key, default)
-
-
-def _str_to_bool(value: Optional[str]) -> bool:
-    if value is None:
-        return False
-    return value.strip().lower() in {"1", "true", "yes", "on"}
-
-
-DEFAULT_BASE_URL = "http://127.0.0.1:10712"
-DEFAULT_WS_URL = "ws://127.0.0.1:10712/magic/web/console"
-DEFAULT_TIMEOUT = 30.0
-
-
-@dataclass(slots=True)
-class MagicAPISettings:
-    """封装 Magic-API 服务相关的环境配置。"""
-
-    base_url: str = DEFAULT_BASE_URL
-    ws_url: str = DEFAULT_WS_URL
-    username: str | None = None
-    password: str | None = None
-    token: str | None = None
-    auth_enabled: bool = False
-    timeout_seconds: float = DEFAULT_TIMEOUT
-
-    @classmethod
-    def from_env(cls, env: Mapping[str, str] | None = None) -> "MagicAPISettings":
-        """从环境变量加载配置。"""
-        env = env or os.environ
-        base_url = _get_env(env, "MAGIC_API_BASE_URL", DEFAULT_BASE_URL).rstrip("/")
-        ws_url = _get_env(env, "MAGIC_API_WS_URL", DEFAULT_WS_URL)
-        username = env.get("MAGIC_API_USERNAME") or None
-        password = env.get("MAGIC_API_PASSWORD") or None
-        token = env.get("MAGIC_API_TOKEN") or None
-        auth_enabled = _str_to_bool(env.get("MAGIC_API_AUTH_ENABLED"))
-
-        timeout_raw = env.get("MAGIC_API_TIMEOUT_SECONDS")
-        try:
-            timeout_seconds = float(timeout_raw) if timeout_raw else DEFAULT_TIMEOUT
-        except (TypeError, ValueError):
-            timeout_seconds = DEFAULT_TIMEOUT
-
-        return cls(
-            base_url=base_url,
-            ws_url=ws_url,
-            username=username,
-            password=password,
-            token=token,
-            auth_enabled=auth_enabled,
-            timeout_seconds=timeout_seconds,
-        )
-
-    def inject_auth(self, headers: MutableMapping[str, str]) -> MutableMapping[str, str]:
-        """根据配置向请求头注入认证信息。"""
-        if not self.auth_enabled:
-            return headers
-
-        if self.token:
-            headers.setdefault("Authorization", f"Bearer {self.token}")
-            headers.setdefault("Magic-Token", self.token)
-
-        if self.username and self.password:
-            headers.setdefault("Magic-Username", self.username)
-            headers.setdefault("Magic-Password", self.password)
-
-        return headers
-
+from magicapi_tools.utils.http_client import MagicAPIHTTPClient, MagicAPISettings
 
 class MagicAPISearchClient:
     """Magic-API 搜索客户端。"""
 
     def __init__(self, settings: MagicAPISettings) -> None:
         self.settings = settings
-        self.session = requests.Session()
+        self.http_client = MagicAPIHTTPClient(settings)
+        self.session = self.http_client.session
+        # Update headers if needed, though MagicAPIHTTPClient sets basic ones
         self.session.headers.update({
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "application/json",
             "User-Agent": "magicapi-search-manager/1.0",
         })
-        self.settings.inject_auth(self.session.headers)
+        # No manual login needed, handled by MagicAPIHTTPClient
 
-        if self.settings.auth_enabled and self.settings.username and self.settings.password:
-            self._login()
-
-    def _login(self) -> bool:
-        """登录获取认证。"""
-        payload = {
-            "username": self.settings.username,
-            "password": self.settings.password,
-        }
-        try:
-            response = self.session.post(
-                f"{self.settings.base_url}/magic/web/login",
-                data=payload,
-                timeout=self.settings.timeout_seconds,
-            )
-            if response.status_code == 200:
-                try:
-                    data = response.json()
-                    return data.get("code") == 1
-                except json.JSONDecodeError:
-                    pass
-        except requests.RequestException:
-            pass
-        return False
 
     def search(self, keyword: str, limit: int = 5) -> List[Dict[str, Any]]:
         """在所有 API 脚本中搜索关键词。

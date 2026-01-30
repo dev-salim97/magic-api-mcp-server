@@ -4,7 +4,6 @@
 """
 
 import asyncio
-import requests
 import sys
 import os
 
@@ -40,25 +39,29 @@ async def test_breakpoint_header():
     # 测试API调用时的断点头信息发送
     print("\n2. 测试API调用时断点头信息...")
 
-    # 拦截requests.get来检查请求头
-    original_get = requests.get
+    # 拦截client.session.request来检查请求头
+    original_request = client.session.request
     captured_headers = None
 
-    def mock_get(url, **kwargs):
+    def mock_request(method, url, **kwargs):
         nonlocal captured_headers
         captured_headers = kwargs.get('headers', {})
+        if captured_headers:
+            full_headers = client.session.headers.copy()
+            full_headers.update(captured_headers)
+            captured_headers = full_headers
+        else:
+            captured_headers = client.session.headers.copy()
         print(f"   请求URL: {url}")
         print(f"   请求头: {captured_headers}")
 
-        # 创建一个模拟响应
         class MockResponse:
             status_code = 200
             text = '{"code":200,"message":"success","data":"test response"}'
 
         return MockResponse()
 
-    # 替换requests.get
-    requests.get = mock_get
+    client.session.request = mock_request
 
     try:
         # 调用带断点的API
@@ -84,8 +87,7 @@ async def test_breakpoint_header():
             return False
 
     finally:
-        # 恢复原始的requests.get
-        requests.get = original_get
+        client.session.request = original_request
 
 
 async def main():

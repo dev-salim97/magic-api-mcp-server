@@ -49,6 +49,11 @@ try:
 except ImportError:
     FastMCP = None
 
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None
+
 def create_app(
     composition: str = "full",
     settings: Optional[MagicAPISettings] = None,
@@ -112,6 +117,10 @@ def main() -> None:
     if FastMCP is None:
         raise SystemExit("未检测到 fastmcp，请先运行 `uv add fastmcp` 安装依赖。")
 
+    # 尝试加载 .env 文件
+    if load_dotenv:
+        load_dotenv()
+
     # 设置信号处理器
     setup_signal_handlers()
     
@@ -136,24 +145,30 @@ def main() -> None:
         help="选择工具组合 (默认: full)"
     )
 
+    # 从环境变量获取默认配置
+    import os
+    default_transport = os.getenv("FASTMCP_TRANSPORT", "stdio")
+    default_host = os.getenv("FASTMCP_HOST", "127.0.0.1")
+    default_port = int(os.getenv("FASTMCP_PORT", "8000"))
+    
     parser.add_argument(
         "--transport",
-        choices=["stdio", "http"],
-        default="stdio",
-        help="传输协议 (默认: stdio)"
+        choices=["stdio", "http", "sse"],
+        default=default_transport,
+        help=f"传输协议 (默认: {default_transport})"
     )
 
     parser.add_argument(
         "--host",
-        default="127.0.0.1",
-        help="HTTP服务器主机地址 (默认: 127.0.0.1)"
+        default=default_host,
+        help=f"HTTP服务器主机地址 (默认: {default_host})"
     )
 
     parser.add_argument(
         "--port",
         type=int,
-        default=8000,
-        help="HTTP服务器端口 (默认: 8000)"
+        default=default_port,
+        help=f"HTTP服务器端口 (默认: {default_port})"
     )
 
     args = parser.parse_args()
@@ -163,6 +178,8 @@ def main() -> None:
     try:
         if args.transport == "http":
             app.run(transport="http", host=args.host, port=args.port)
+        elif args.transport == "sse":
+            app.run(transport="sse", host=args.host, port=args.port)
         else:
             app.run(transport="stdio")
     except KeyboardInterrupt:

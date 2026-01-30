@@ -4,7 +4,6 @@
 """
 
 import asyncio
-import requests
 import sys
 import os
 
@@ -31,13 +30,21 @@ async def test_request_headers():
     # 模拟连接状态
     client.connected = True
 
-    # 拦截requests.get来检查请求头
-    original_get = requests.get
+    # 拦截client.session.request来检查请求头
+    original_request = client.session.request
     captured_headers = None
 
-    def mock_get(url, **kwargs):
+    def mock_request(method, url, **kwargs):
         nonlocal captured_headers
         captured_headers = kwargs.get('headers', {})
+        # 合并session的headers
+        if captured_headers:
+            full_headers = client.session.headers.copy()
+            full_headers.update(captured_headers)
+            captured_headers = full_headers
+        else:
+            captured_headers = client.session.headers.copy()
+            
         print(f"   请求URL: {url}")
 
         # 创建模拟响应
@@ -47,8 +54,11 @@ async def test_request_headers():
 
         return MockResponse()
 
-    # 替换requests.get
-    requests.get = mock_get
+    # 替换client.session.request
+    client.session.request = mock_request
+    
+    # 模拟已登录状态
+    client.session.headers["magic-token"] = "test-token"
 
     try:
         print("1. 测试调试API调用请求头...")
@@ -83,10 +93,10 @@ async def test_request_headers():
                             print(f"   ❌ 断点格式错误，期望 '3,4'，实际 '{value}'")
                     elif header == "magic-token":
                         print(f"   ✅ {header}: {value}")
-                        if value == "unauthorization":
+                        if value == "test-token":
                             print("   ✅ 认证token正确!")
                         else:
-                            print(f"   ❌ 认证token错误，期望 'unauthorization'，实际 '{value}'")
+                            print(f"   ❌ 认证token错误，期望 'test-token'，实际 '{value}'")
                     else:
                         print(f"   ✅ {header}: {value}")
                 else:
@@ -109,7 +119,7 @@ async def test_request_headers():
         print("\n3. 与curl命令对比...")
         print("   curl命令关键请求头:")
         print("   - Magic-Request-Script-Id: 24646387e5654d78b4898ac7ed2eb560")
-        print("   - magic-token: unauthorization")
+        print("   - magic-token: test-token")
         print("   - Magic-Request-Breakpoints: 3,4,5,6")
         print("   - Magic-Request-Client-Id: fb3d8e0ef44fe93e")
         print("   - Accept: application/json, text/plain, */*")
@@ -119,8 +129,7 @@ async def test_request_headers():
         return True
 
     finally:
-        # 恢复原始的requests.get
-        requests.get = original_get
+        client.session.request = original_request
 
 
 async def main():

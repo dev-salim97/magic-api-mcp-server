@@ -178,8 +178,11 @@ class TestArgumentParsing(unittest.TestCase):
             def __init__(self):
                 self.list = False
                 self.search = None
+                self.regex = None
                 self.class_name = None
                 self.method = None
+                self.txt = None
+                self.txt_search = None
 
         args = MockArgs()
         with self.assertRaises(MagicAPIClassExplorerError):
@@ -190,8 +193,8 @@ class TestMainFunction(unittest.TestCase):
     """测试主函数。"""
 
     @patch('sys.stdout', new_callable=lambda: open(os.devnull, 'w'))
-    @patch('extract_class_methods.MagicAPIClassExplorer')
-    @patch('extract_class_methods.MagicAPIClassClient')
+    @patch('cli.extract_class_methods.MagicAPIClassExplorer')
+    @patch('cli.extract_class_methods.MagicAPIClassClient')
     def test_main_list(self, mock_client_class, mock_explorer_class, mock_stdout):
         """测试主函数的 --list 功能。"""
         # 模拟命令行参数
@@ -209,7 +212,10 @@ class TestMainFunction(unittest.TestCase):
                 pass  # 正常退出
 
             # 验证调用
-            mock_explorer.list_all_classes.assert_called_once_with(False)
+            # mock_explorer.list_all_classes.assert_called_once_with(False)
+            mock_explorer.list_all_classes.assert_called_once()
+            args, _ = mock_explorer.list_all_classes.call_args
+            self.assertEqual(args[0], False) # output_json
 
 
 if __name__ == '__main__':

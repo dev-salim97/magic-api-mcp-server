@@ -6,6 +6,13 @@ import os
 from dataclasses import dataclass
 from typing import Mapping, MutableMapping, Optional
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()  # 加载 .env 文件
+except ImportError:
+    # 如果没有安装 python-dotenv，继续运行而不加载 .env 文件
+    pass
+
 
 def _get_env(env: Mapping[str, str], key: str, default: str) -> str:
     return env.get(key, default)
@@ -17,11 +24,11 @@ def _str_to_bool(value: Optional[str]) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
-DEFAULT_BASE_URL = "http://127.0.0.1:10712"
-DEFAULT_WS_URL = "ws://127.0.0.1:10712/magic/web/console"
+DEFAULT_BASE_URL = "http://127.0.0.1:9999"
+DEFAULT_WS_URL = "ws://127.0.0.1:9999/console"
 DEFAULT_TIMEOUT = 30.0
 DEFAULT_LOG_LEVEL = "INFO"
-DEFAULT_TRANSPORT = "stdio"
+DEFAULT_TRANSPORT = "sse"
 DEFAULT_WS_LOG_HISTORY_SIZE = 500
 DEFAULT_WS_LOG_CAPTURE_WINDOW = 2
 DEFAULT_WS_RECONNECT_INTERVAL = 5.0
@@ -38,30 +45,31 @@ DEFAULT_EXCEPTION_CODE = -1
 class MagicAPISettings:
     """封装 Magic-API 服务相关的环境配置。"""
 
-    base_url: str = DEFAULT_BASE_URL
-    ws_url: str = DEFAULT_WS_URL
-    username: str | None = None
-    password: str | None = None
-    token: str | None = 'unauthorization'
-    auth_enabled: bool = False
-    timeout_seconds: float = DEFAULT_TIMEOUT
-    debug_timeout_seconds: float = DEFAULT_DEBUG_TIMEOUT
-    log_level: str = DEFAULT_LOG_LEVEL
-    transport: str = DEFAULT_TRANSPORT
-    ws_auto_start: bool = True
-    ws_log_history_size: int = DEFAULT_WS_LOG_HISTORY_SIZE
-    ws_log_capture_window: float = DEFAULT_WS_LOG_CAPTURE_WINDOW
-    ws_reconnect_interval: float = DEFAULT_WS_RECONNECT_INTERVAL
+    base_url: str
+    ws_url: str
+    username: str | None
+    password: str | None
+    token: str | None
+    auth_enabled: bool
+    timeout_seconds: float
+    debug_timeout_seconds: float
+    log_level: str
+    transport: str
+    ws_auto_start: bool
+    ws_log_history_size: int
+    ws_log_capture_window: float
+    ws_reconnect_interval: float
 
     # API响应状态码配置（支持自定义状态码）
-    api_success_code: int = DEFAULT_SUCCESS_CODE
-    api_success_message: str = DEFAULT_SUCCESS_MESSAGE
-    api_invalid_code: int = DEFAULT_INVALID_CODE
-    api_exception_code: int = DEFAULT_EXCEPTION_CODE
+    api_success_code: int
+    api_success_message: str
+    api_invalid_code: int
+    api_exception_code: int
 
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> "MagicAPISettings":
-        """从环境变量加载配置。"""
+        """从环境变量加载配置（优先从传入的env，否则从系统环境变量）。"""
+        # 如果未提供env参数，则使用系统环境变量
         env = env or os.environ
         base_url = _get_env(env, "MAGIC_API_BASE_URL", DEFAULT_BASE_URL).rstrip("/")
         ws_url = _get_env(env, "MAGIC_API_WS_URL", DEFAULT_WS_URL)
@@ -95,7 +103,8 @@ class MagicAPISettings:
             ws_log_history_size = DEFAULT_WS_LOG_HISTORY_SIZE
 
         try:
-            ws_log_capture_window = float(ws_capture_window_raw) if ws_capture_window_raw else DEFAULT_WS_LOG_CAPTURE_WINDOW
+            ws_log_capture_window = float(
+                ws_capture_window_raw) if ws_capture_window_raw else DEFAULT_WS_LOG_CAPTURE_WINDOW
         except (TypeError, ValueError):
             ws_log_capture_window = DEFAULT_WS_LOG_CAPTURE_WINDOW
 

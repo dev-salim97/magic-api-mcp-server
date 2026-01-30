@@ -104,7 +104,7 @@ class ClassMethodService(BaseService):
             "Accept": "application/json",
             "User-Agent": "magicapi-class-explorer/1.0",
         }
-        self.settings.inject_auth(headers)
+        # self.settings.inject_auth(headers) - 已移除，使用 session 中的认证信息
 
         try:
             logger.info(f"🔍 [ClassService] 发送HTTP请求: POST {classes_url}")
@@ -283,7 +283,7 @@ class ClassMethodService(BaseService):
             "Accept": "application/json",
             "User-Agent": "magicapi-class-explorer/1.0",
         }
-        self.settings.inject_auth(headers)
+        # self.settings.inject_auth(headers) - 已移除，使用 session 中的认证信息
 
         try:
             logger.info(f"🔍 [ClassService] 发送HTTP请求: POST {classes_url}")
@@ -486,7 +486,7 @@ class ClassMethodService(BaseService):
             "Accept": "text/plain",
             "User-Agent": "magicapi-class-explorer/1.0",
         }
-        self.settings.inject_auth(headers)
+        # self.settings.inject_auth(headers) - 已移除，使用 session 中的认证信息
 
         try:
             logger.info(f"🔍 [ClassService] 发送HTTP请求: GET {classes_txt_url}")

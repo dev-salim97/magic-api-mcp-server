@@ -3,7 +3,15 @@
 
 import signal
 import sys
+import os
 import atexit
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 from magicapi_mcp.magicapi_assistant import create_app
 from magicapi_mcp.settings import DEFAULT_SETTINGS
 
@@ -58,8 +66,17 @@ if __name__ == '__main__':
     atexit.register(cleanup_on_exit)
     
     try:
-        # When running this script directly, use stdio transport (this is FastMCP's standard mode)
-        mcp.run(transport='stdio')
+        # Get transport configuration from environment variables
+        transport = os.getenv("FASTMCP_TRANSPORT", "stdio")
+        host = os.getenv("FASTMCP_HOST", "127.0.0.1")
+        port = int(os.getenv("FASTMCP_PORT", "8000"))
+        
+        if transport == "http":
+            mcp.run(transport="http", host=host, port=port)
+        elif transport == "sse":
+            mcp.run(transport="sse", host=host, port=port)
+        else:
+            mcp.run(transport="stdio")
     except KeyboardInterrupt:
         signal_handler(None, None)
     except Exception as e:

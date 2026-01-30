@@ -12,6 +12,9 @@ from typing import Any, Dict, List, Optional
 import requests
 from urllib.parse import urljoin
 
+from magicapi_mcp.settings import MagicAPISettings
+from magicapi_tools.utils.http_client import MagicAPIHTTPClient
+
 
 class MagicAPIClassExplorerError(Exception):
     """类探索器错误。"""
@@ -137,17 +140,34 @@ class MagicAPIClassClient:
 
     def __init__(self, base_url: str, timeout: int = 30):
         """初始化客户端。"""
-        self.base_url = base_url.rstrip("/")
-        # 确保 base_url 以 http:// 或 https:// 开头
-        if not self.base_url.startswith(('http://', 'https://')):
-            self.base_url = 'http://' + self.base_url.lstrip('http://').lstrip('https://')
-        self.timeout = timeout
-        self.session = requests.Session()
+        # 加载配置
+        self.settings = MagicAPISettings.from_env()
+        
+        # 如果提供了 base_url，覆盖配置
+        if base_url:
+            self.base_url = base_url.rstrip("/")
+            if not self.base_url.startswith(('http://', 'https://')):
+                self.base_url = 'http://' + self.base_url.lstrip('http://').lstrip('https://')
+            self.settings.base_url = self.base_url
+        else:
+            self.base_url = self.settings.base_url
+
+        # 更新超时配置
+        if timeout:
+            self.timeout = timeout
+            self.settings.timeout_seconds = float(timeout)
+        else:
+            self.timeout = int(self.settings.timeout_seconds)
+
+        # 初始化 HTTP 客户端（会自动处理登录）
+        self.http_client = MagicAPIHTTPClient(self.settings)
+        self.session = self.http_client.session
 
     def get_all_classes(self) -> Dict[str, Any]:
         """获取所有类信息。"""
         url = self.base_url + "/magic/web/classes"
         try:
+            # 使用 http_client.session 发送请求
             response = self.session.post(url, timeout=self.timeout)
             response.raise_for_status()
             result = response.json()

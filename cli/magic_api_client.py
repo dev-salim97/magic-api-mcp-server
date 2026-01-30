@@ -33,7 +33,12 @@ import json
 import requests
 import time
 import sys
+import os
 
+# Add project root to sys.path to ensure we can import magicapi_tools
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from magicapi_tools.utils.http_client import MagicAPIHTTPClient, MagicAPISettings
 
 class MagicAPIWebSocketClient:
     def __init__(self, ws_url, api_base_url, username=None, password=None):
@@ -44,6 +49,22 @@ class MagicAPIWebSocketClient:
         self.websocket = None
         self.client_id = f"python_client_{int(time.time())}"
         self.connected = False
+        
+        # Initialize HTTP Client
+        self.settings = MagicAPISettings(
+            base_url=api_base_url,
+            username=username,
+            password=password
+        )
+        self.http_client = MagicAPIHTTPClient(self.settings)
+        self.session = self.http_client.session
+        
+        # No need for manual login here as MagicAPIHTTPClient handles it lazily or we can trigger it
+        # But we might want to ensure login happens early if desired, though MagicAPIHTTPClient does auto-login on 401.
+        # However, for this client, we might want to ensure token is present for WebSocket login if needed?
+        # Actually WebSocket login message uses username/client_id, not token directly in the message body shown here:
+        # login_message = f"login,{self.username or 'unauthorization'},{self.client_id}"
+        # So HTTP token might not be strictly required for WS *connection* here, but good for API calls.
 
     async def connect(self):
         """连接到 WebSocket"""
@@ -134,17 +155,15 @@ class MagicAPIWebSocketClient:
         try:
             print(f"🌐 调用API: {method} {url}")
 
-            if method.upper() == "GET":
-                response = requests.get(url, params=params, headers=default_headers, timeout=30)
-            elif method.upper() == "POST":
-                response = requests.post(url, json=data, params=params, headers=default_headers, timeout=30)
-            elif method.upper() == "PUT":
-                response = requests.put(url, json=data, params=params, headers=default_headers, timeout=30)
-            elif method.upper() == "DELETE":
-                response = requests.delete(url, params=params, headers=default_headers, timeout=30)
-            else:
-                print(f"❌ 不支持的HTTP方法: {method}")
-                return None
+            # 使用 self.session 发送请求
+            response = self.session.request(
+                method=method,
+                url=url,
+                params=params,
+                json=data if method.upper() in ["POST", "PUT"] else None,
+                headers=default_headers,
+                timeout=30
+            )
 
             print(f"📊 响应状态: {response.status_code}")
 

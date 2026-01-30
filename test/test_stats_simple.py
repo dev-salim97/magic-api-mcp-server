@@ -1,32 +1,33 @@
 #!/usr/bin/env python3
 """使用 requests 直接测试统计功能"""
 
-import requests
 import json
+import os
+import sys
+
+# 添加项目根目录到路径
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from magicapi_tools.utils.http_client import MagicAPIHTTPClient
+from magicapi_mcp.settings import MagicAPISettings
 
 def test_stats_simple():
-    """使用 requests 直接测试统计功能"""
-    print("🔧 使用 requests 直接测试统计功能...")
+    """使用 MagicAPIHTTPClient 测试统计功能"""
+    print("🔧 使用 MagicAPIHTTPClient 测试统计功能...")
 
     try:
-        # 直接调用资源树 API
-        response = requests.post(
-            'http://127.0.0.1:10712/magic/web/resource',
-            headers={'Content-Type': 'application/json'},
-            timeout=10
-        )
+        # 初始化客户端
+        settings = MagicAPISettings.from_env({
+            "MAGIC_API_BASE_URL": "http://127.0.0.1:10712"
+        })
+        client = MagicAPIHTTPClient(settings)
+        
+        # 调用资源树 API
+        success, tree_data = client.resource_tree()
 
-        if response.status_code != 200:
-            print(f"❌ HTTP 响应状态码: {response.status_code}")
-            print(f"响应内容: {response.text}")
+        if not success:
+            print(f"❌ API 返回错误: {tree_data}")
             return False
-
-        result = response.json()
-        if result.get('code') != 1:
-            print(f"❌ API 返回错误: {result}")
-            return False
-
-        tree_data = result.get('data', {})
         print(f"✅ 获取资源树成功，数据类型: {type(tree_data)}")
         print(f"📊 资源树包含类型: {list(tree_data.keys()) if isinstance(tree_data, dict) else 'N/A'}")
 

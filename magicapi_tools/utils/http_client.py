@@ -17,8 +17,6 @@ logger = get_logger('utils.http_client')
 
 def _default_headers() -> dict[str, str]:
     return {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
         "User-Agent": "magicapi-tools/1.0",
     }
 
@@ -33,7 +31,6 @@ class MagicAPIHTTPClient:
         self.session.headers.update(_default_headers())
         self.settings.inject_auth(self.session.headers)
 
-
         if self.settings.auth_enabled and self.settings.username and self.settings.password:
             self._login()
 
@@ -44,8 +41,8 @@ class MagicAPIHTTPClient:
         }
         try:
             response = self.session.post(
-                f"{self.settings.base_url}/magic/web/login",
-                json=payload,
+                f"{self.settings.base_url}/login",
+                data=payload,
                 timeout=self.settings.timeout_seconds,
             )
             if response.status_code == 200:
@@ -53,13 +50,21 @@ class MagicAPIHTTPClient:
                     data = response.json()
                 except json.JSONDecodeError:
                     return False
-                return data.get("code") == 1
-            return False
+                
+                # 登录成功，从响应头获取 token
+                if data.get("code") == 1:
+                    token = response.headers.get("magic-token")
+                    if token:
+                        self.session.headers["magic-token"] = token
+                        logger.debug(f"登录成功，获取到 magic-token: {token[:10]}...")
+                    return True
+                return False
         except requests.RequestException:
             return False
 
     def _build_full_paths(self, tree_data: Dict[str, Any]) -> Dict[str, Any]:
         """为资源树中的每个节点构建完整路径"""
+
         def build_path_recursive(node: Dict[str, Any], parent_path: str = "") -> Dict[str, Any]:
             """递归构建节点的全路径"""
             node_copy = dict(node)  # 复制节点避免修改原数据
@@ -109,7 +114,7 @@ class MagicAPIHTTPClient:
         return result
 
     def resource_tree(self) -> tuple[bool, Any]:
-        url = f"{self.settings.base_url}/magic/web/resource"
+        url = f"{self.settings.base_url}/resource"
         logger.debug(f"HTTP请求: POST {url}")
 
         try:
@@ -142,7 +147,6 @@ class MagicAPIHTTPClient:
             # 为资源树添加完整路径信息
             data_with_paths = self._build_full_paths(data)
 
-
             return True, data_with_paths
 
         except requests.RequestException as exc:
@@ -157,7 +161,7 @@ class MagicAPIHTTPClient:
             }
 
     def api_detail(self, file_id: str) -> tuple[bool, Any]:
-        url = f"{self.settings.base_url}/magic/web/resource/file/{file_id}"
+        url = f"{self.settings.base_url}/resource/file/{file_id}"
         logger.debug(f"HTTP请求: GET {url}")
         logger.debug(f"  文件ID: {file_id}")
 
@@ -228,13 +232,13 @@ class MagicAPIHTTPClient:
             }
 
     def call_api(
-        self,
-        method: str,
-        path: str,
-        params: Optional[Mapping[str, Any]] = None,
-        data: Optional[Any] = None,
-        headers: Optional[Mapping[str, str]] = None,
-        timeout: Optional[float] = None,
+            self,
+            method: str,
+            path: str,
+            params: Optional[Mapping[str, Any]] = None,
+            data: Optional[Any] = None,
+            headers: Optional[Mapping[str, str]] = None,
+            timeout: Optional[float] = None,
     ) -> tuple[bool, Any]:
         method = method.upper()
         if not path.startswith("/"):

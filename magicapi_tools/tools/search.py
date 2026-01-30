@@ -66,7 +66,7 @@ class SearchTools:
                     "Accept": "application/json",
                     "User-Agent": "magicapi-search-manager/1.0",
                 }
-                context.settings.inject_auth(headers)
+                # context.settings.inject_auth(headers) # Removed: MagicAPIHTTPClient session already handles auth
 
                 try:
                     http_response = context.http_client.session.post(
@@ -201,7 +201,7 @@ class SearchTools:
                     "Accept": "application/json",
                     "User-Agent": "magicapi-search-manager/1.0",
                 }
-                context.settings.inject_auth(headers)
+                # context.settings.inject_auth(headers) # Removed: MagicAPIHTTPClient session already handles auth
 
                 try:
                     http_response = context.http_client.session.get(
