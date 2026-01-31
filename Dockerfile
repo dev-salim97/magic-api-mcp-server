@@ -18,7 +18,7 @@ EXPOSE 8000
 
 # 设置环境变量默认值
 ENV MAGIC_API_BASE_URL=http://host.docker.internal:10712
-ENV MAGIC_API_WS_URL=ws://host.docker.internal:10712/magic/web/console
+ENV MAGIC_API_WS_URL=ws://host.docker.internal:10712/console
 ENV MAGIC_API_TIMEOUT_SECONDS=30.0
 ENV LOG_LEVEL=INFO
 ENV FASTMCP_TRANSPORT=stdio

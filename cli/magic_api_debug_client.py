@@ -67,7 +67,7 @@ class DebugCompleter:
         self.http_methods = ['GET', 'POST', 'PUT', 'DELETE']
         self.common_paths = [
             '/test00/test0001',
-            '/magic/web/resource',
+            '/resource',
             '/api/test',
             '/api/search',
             '/api/create',
@@ -468,7 +468,7 @@ class MagicAPIDebugClient:
             "sec-ch-ua": '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
             "sec-ch-ua-mobile": "?0",
             "sec-ch-ua-platform": '"macOS"',
-            "Referer": f"{self.api_base_url}/magic/web/index.html"
+            "Referer": f"{self.api_base_url}/index.html"
         }
 
         if not self.connected:
@@ -568,7 +568,7 @@ class MagicAPIDebugClient:
             import subprocess
             result = subprocess.run([
                 sys.executable, extract_script,
-                '--url', 'http://127.0.0.1:10712/magic/web/resource',
+                '--url', 'http://127.0.0.1:10712/resource',
                 '--path-to-id', api_path
             ], capture_output=True, text=True, timeout=10)
 
@@ -636,7 +636,7 @@ class MagicAPIDebugClient:
             "sec-ch-ua": '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
             "sec-ch-ua-mobile": "?0",
             "sec-ch-ua-platform": '"macOS"',
-            "Referer": f"{self.api_base_url}/magic/web/index.html"
+            "Referer": f"{self.api_base_url}/index.html"
         }
 
         # 合并请求头
@@ -711,11 +711,11 @@ def print_usage():
     print("自动补全:")
     print("  命令: test, call, breakpoint等")
     print("  HTTP方法: GET, POST, PUT, DELETE")
-    print("  路径: /test00/test0001, /magic/web/resource等")
+    print("  路径: /test00/test0001, /resource等")
     print("  test命令路径自动添加'/'前缀")
     print("")
     print("配置:")
-    print("  WebSocket URL: ws://127.0.0.1:10712/magic/web/console")
+    print("  WebSocket URL: ws://127.0.0.1:10712/console")
     print("  API Base URL: http://127.0.0.1:10712")
 
 
@@ -739,7 +739,7 @@ def preprocess_command(command_line):
 async def interactive_debug_session():
     """交互式调试会话"""
     # 配置连接信息
-    WS_URL = "ws://127.0.0.1:10712/magic/web/console"
+    WS_URL = "ws://127.0.0.1:10712/console"
     API_BASE_URL = "http://127.0.0.1:10712"
     USERNAME = "unauthorization"
     PASSWORD = "123456"

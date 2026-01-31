@@ -43,7 +43,7 @@ uv add fastmcp
       "timeout": 600,
       "env": {
         "MAGIC_API_BASE_URL": "http://127.0.0.1:10712",
-        "MAGIC_API_WS_URL": "ws://127.0.0.1:10712/magic/web/console",
+        "MAGIC_API_WS_URL": "ws://127.0.0.1:10712/console",
         "MAGIC_API_TIMEOUT_SECONDS": "30.0",
         "LOG_LEVEL": "INFO"
       }
@@ -167,7 +167,7 @@ Magic-Script 是一种小众语言，具有独特的语法规则，不遵循标�
       "timeout": 600,
       "env": {
         "MAGIC_API_BASE_URL": "http://127.0.0.1:10712",
-        "MAGIC_API_WS_URL": "ws://127.0.0.1:10712/magic/web/console"
+        "MAGIC_API_WS_URL": "ws://127.0.0.1:10712/console"
       }
     }
   }
@@ -384,7 +384,7 @@ Java类和方法检索工具
 | 变量 | 用途 | 值 | 默认值 |
 |------|------|----|--------|
 | MAGIC_API_BASE_URL | Magic-API 服务基础 URL | URL 地址 | http://127.0.0.1:10712 |
-| MAGIC_API_WS_URL | Magic-API WebSocket URL | WebSocket 地址 | ws://127.0.0.1:10712/magic/web/console |
+| MAGIC_API_WS_URL | Magic-API WebSocket URL | WebSocket 地址 | ws://127.0.0.1:10712/console |
 | MAGIC_API_USERNAME | Magic-API 认证用户名 | 字符串 | 无 |
 | MAGIC_API_PASSWORD | Magic-API 认证密码 | 字符串 | 无 |
 | MAGIC_API_TOKEN | Magic-API 认证令牌 | 字符串 | 无 |
@@ -489,7 +489,7 @@ docker stop magic-api-mcp-server
 | 变量 | 描述 | 默认值 |
 |------|------|--------|
 | `MAGIC_API_BASE_URL` | Magic-API 服务基础 URL | `http://host.docker.internal:10712` |
-| `MAGIC_API_WS_URL` | Magic-API WebSocket URL | `ws://host.docker.internal:10712/magic/web/console` |
+| `MAGIC_API_WS_URL` | Magic-API WebSocket URL | `ws://host.docker.internal:10712/console` |
 | `MAGIC_API_USERNAME` | 认证用户名 | 无 |
 | `MAGIC_API_PASSWORD` | 认证密码 | 无 |
 | `MAGIC_API_TOKEN` | 认证令牌 | 无 |

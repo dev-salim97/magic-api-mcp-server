@@ -110,7 +110,7 @@ async function mockMcpCall(toolName, params = {}) {
         'search_todo_comments': [],
         'search_knowledge': [],
         'get_debug_status': { status: 'disconnected', active_sessions: 0 },
-        'get_websocket_status': { connected: false, url: 'ws://127.0.0.1:10712/magic/web/console' },
+        'get_websocket_status': { connected: false, url: 'ws://127.0.0.1:10712/console' },
         'get_resource_statistics': { total_apis: 0, total_groups: 0, total_functions: 0 },
         'list_resource_groups': [],
         'export_resource_tree': { format: 'json', data: {} },

@@ -21,7 +21,7 @@ async def test_breakpoint_commands():
 
     # 创建客户端（不连接WebSocket，仅测试断点操作）
     client = MagicAPIDebugClient(
-        ws_url="ws://127.0.0.1:10712/magic/web/console",
+        ws_url="ws://127.0.0.1:10712/console",
         api_base_url="http://127.0.0.1:10712",
         username="admin",
         password="123456"

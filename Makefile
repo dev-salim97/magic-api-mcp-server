@@ -81,7 +81,7 @@ import os; \
 import requests; \
 try: \
     base_url = os.getenv('MAGIC_API_BASE_URL', 'http://host.docker.internal:10712'); \
-    response = requests.get(f'{base_url}/magic/web/resource', timeout=5); \
+    response = requests.get(f'{base_url}/resource', timeout=5); \
     if response.status_code == 200: \
         print('✅ Magic-API service is accessible'); \
     else: \

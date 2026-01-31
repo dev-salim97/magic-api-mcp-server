@@ -165,7 +165,7 @@ class MagicAPIClassClient:
 
     def get_all_classes(self) -> Dict[str, Any]:
         """获取所有类信息。"""
-        url = self.base_url + "/magic/web/classes"
+        url = self.base_url + "/classes"
         try:
             # 使用 http_client.session 发送请求
             response = self.session.post(url, timeout=self.timeout)
@@ -180,7 +180,7 @@ class MagicAPIClassClient:
 
     def get_class_details(self, class_name: str) -> List[Dict[str, Any]]:
         """获取指定类的详细信息。"""
-        url = self.base_url + "/magic/web/class"
+        url = self.base_url + "/class"
         try:
             response = self.session.post(
                 url,
@@ -198,7 +198,7 @@ class MagicAPIClassClient:
 
     def get_classes_txt(self) -> str:
         """获取压缩格式的类信息文本。"""
-        url = self.base_url + "/magic/web/classes.txt"
+        url = self.base_url + "/classes.txt"
         try:
             response = self.session.get(url, timeout=self.timeout)
             response.raise_for_status()

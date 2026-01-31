@@ -13,10 +13,10 @@ CONFIG_KNOWLEDGE: Dict[str, Dict[str, Any]] = {
         "config": {
             "magic-api.web": {
                 "description": "Web页面访问路径配置",
-                "default": "/magic/web",
+                "default": "",
                 "example": textwrap.dedent('''
                     magic-api:
-                      web: /magic/web  # 访问地址：http://localhost:9999/magic/web
+                      web:   # 访问地址：http://localhost:9999
                 ''').strip()
             },
             "magic-api.resource.type": {

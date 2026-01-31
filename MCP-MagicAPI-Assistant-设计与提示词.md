@@ -53,7 +53,7 @@ uv pip install -r requirements.txt  # 或 uv sync
 | 变量 | 默认值 | 说明 |
 | --- | --- | --- |
 | `MAGIC_API_BASE_URL` | `http://127.0.0.1:10712` | HTTP 接口根地址 |
-| `MAGIC_API_WS_URL` | `ws://127.0.0.1:10712/magic/web/console` | WebSocket 控制台地址（暂保留浮动） |
+| `MAGIC_API_WS_URL` | `ws://127.0.0.1:10712/console` | WebSocket 控制台地址（暂保留浮动） |
 | `MAGIC_API_USERNAME` / `MAGIC_API_PASSWORD` | 空 | 认证用户名与密码 |
 | `MAGIC_API_TOKEN` | 空 | Header Token |
 | `MAGIC_API_AUTH_ENABLED` | `false` | 是否启用认证（true/false/1/on） |
@@ -61,7 +61,7 @@ uv pip install -r requirements.txt  # 或 uv sync
 | `LOG_LEVEL` | `INFO` | MCP 服务日志等级（预留） |
 | `FASTMCP_TRANSPORT` | `stdio` | 可切换为 `http` 等 Transport |
 
-- 当 `MAGIC_API_AUTH_ENABLED=true` 时，`MagicAPIHTTPClient` 会先调用 `/magic/web/login`，并在请求头中附带 Token/用户名信息。
+- 当 `MAGIC_API_AUTH_ENABLED=true` 时，`MagicAPIHTTPClient` 会先调用 `/login`，并在请求头中附带 Token/用户名信息。
 - 所有 MCP 工具在调用外部脚本或 HTTP 接口前都会透传当前环境变量，保证与原有 CLI 行为一致。
 
 ---
@@ -81,7 +81,7 @@ uv pip install -r requirements.txt  # 或 uv sync
 | `resource_tree(kind='api', format='tree', search=None, depth=None)` | 类型、搜索词、深度、格式选择 | `{format, kind, tree|nodes|csv, filters_applied}` | 调用资源树 API，支持树形(tree)/数组(json)/CSV(csv)格式输出，默认树形结构。 |
 | `path_to_id(path, fuzzy=True)` | 接口路径 | `{path, matches[]}` 或错误 | 通过资源树查找接口 ID，支持模糊/精确匹配。 |
 | `path_detail(path, fuzzy=True)` | 接口路径 | `{path, fuzzy, results[{meta, detail|error}]}` | 直接返回详情，等价于脚本 `--path-to-detail` 功能。 |
-| `api_detail(file_id)` | 文件 ID | `{id, name, path, method, script, meta_raw}` | 包装 `/magic/web/resource/file/{id}`，返回完整脚本与元信息。 |
+| `api_detail(file_id)` | 文件 ID | `{id, name, path, method, script, meta_raw}` | 包装 `/resource/file/{id}`，返回完整脚本与元信息。 |
 | `call(method, path, params=None, data=None, headers=None)` | HTTP 方法、路径及参数 | `{status, headers, body}` | 直接发起 Magic-API 调用，自动注入调用标识头。 |
 | `meta()` | 无 | `{system_prompt, environment}` | 返回系统提示词与运行时环境信息，便于客户端调试。 |
 

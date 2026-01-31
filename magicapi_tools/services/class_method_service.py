@@ -98,7 +98,7 @@ class ClassMethodService(BaseService):
     ) -> Dict[str, Any]:
         """列出所有 Magic-API 可用的类、扩展和函数的实现。"""
         # 获取类信息
-        classes_url = f"{self.settings.base_url}/magic/web/classes"
+        classes_url = f"{self.settings.base_url}/classes"
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "application/json",
@@ -277,7 +277,7 @@ class ClassMethodService(BaseService):
                 return create_operation_error("正则表达式验证", "invalid_param", f"无效的正则表达式: {e}")
 
         # 获取类信息
-        classes_url = f"{self.settings.base_url}/magic/web/classes"
+        classes_url = f"{self.settings.base_url}/classes"
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "application/json",
@@ -481,7 +481,7 @@ class ClassMethodService(BaseService):
     ) -> Dict[str, Any]:
         """在压缩类信息中搜索关键词的实现。"""
         # 获取压缩类信息
-        classes_txt_url = f"{self.settings.base_url}/magic/web/classes.txt"
+        classes_txt_url = f"{self.settings.base_url}/classes.txt"
         headers = {
             "Accept": "text/plain",
             "User-Agent": "magicapi-class-explorer/1.0",
@@ -644,7 +644,7 @@ class ClassMethodService(BaseService):
     def _get_magic_api_class_details_impl(self, class_name: str) -> Dict[str, Any]:
         """获取指定 Magic-API 类的详细信息的实现。"""
         # 获取类详情
-        class_url = f"{self.settings.base_url}/magic/web/class"
+        class_url = f"{self.settings.base_url}/class"
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "application/json",

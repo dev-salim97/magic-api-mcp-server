@@ -9,7 +9,7 @@ services:
     environment:
       # Magic-API 服务配置
       - MAGIC_API_BASE_URL=http://host.docker.internal:10712
-      - MAGIC_API_WS_URL=ws://host.docker.internal:10712/magic/web/console
+      - MAGIC_API_WS_URL=ws://host.docker.internal:10712/console
 
       # 可选认证配置
       # - MAGIC_API_USERNAME=your_username

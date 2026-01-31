@@ -58,7 +58,7 @@ class SearchTools:
 
                 # 直接使用session发送表单数据（因为call_api会将dict转换为JSON）
                 search_data = {'keyword': keyword}
-                url = f"{context.settings.base_url}/magic/web/search"
+                url = f"{context.settings.base_url}/search"
 
                 # 设置请求头
                 headers = {
@@ -193,7 +193,7 @@ class SearchTools:
             """搜索TODO注释。"""
             try:
                 # 直接使用session发送GET请求
-                url = f"{context.settings.base_url}/magic/web/todo"
+                url = f"{context.settings.base_url}/todo"
 
                 # 设置请求头
                 headers = {

@@ -253,7 +253,7 @@ def fetch_file_detail(file_id: str, base_url: str = 'http://127.0.0.1:10712') ->
         文件详情数据
     """
     try:
-        url = f"{base_url}/magic/web/resource/file/{file_id}"
+        url = f"{base_url}/resource/file/{file_id}"
 
         # 使用curl命令获取文件详情
         result = subprocess.run([
@@ -553,7 +553,7 @@ def print_usage():
     print("\n输出格式: 标准CSV格式 (method,path,name)")
     print("适用场景: 给大模型或其他程序使用")
     print("\n选项:")
-    print("  --url URL           指定API端点URL (默认: http://127.0.0.1:10712/magic/web/resource)")
+    print("  --url URL           指定API端点URL (默认: http://127.0.0.1:10712/resource)")
     print("  --detail ID         查看指定接口ID的详细信息")
     print("  --path-to-id PATH   通过接口路径获取对应的ID（智能路径匹配，支持带/不带前导斜杠）")
     print("  --path-to-detail PATH 通过接口路径直接获取详细信息（智能路径匹配，支持带/不带前导斜杠）")
@@ -567,7 +567,7 @@ def print_usage():
     print("  python extract_api_paths.py ../sfm_back/response.json")
     print("  ")
     print("  # 从API端点获取")
-    print("  python extract_api_paths.py --url http://127.0.0.1:10712/magic/web/resource")
+    print("  python extract_api_paths.py --url http://127.0.0.1:10712/resource")
     print("  ")
     print("  # 使用默认API端点")
     print("  python extract_api_paths.py --url")
@@ -600,7 +600,7 @@ def main():
     # 解析命令行参数
     data_source = None
     use_url = False
-    api_url = 'http://127.0.0.1:10712/magic/web/resource'  # 默认URL
+    api_url = 'http://127.0.0.1:10712/resource'  # 默认URL
     method_filter = None
     path_filter = None
     name_filter = None
@@ -658,7 +658,7 @@ def main():
 
         print(f"正在获取接口详情 (ID: {detail_id})...")
         # 从默认URL中提取base_url
-        base_url = api_url.replace('/magic/web/resource', '')
+        base_url = api_url.replace('/resource', '')
         file_data = fetch_file_detail(detail_id, base_url)
         print(format_file_detail(file_data))
         return
@@ -714,7 +714,7 @@ def main():
         print(f"正在获取接口详情 (ID: {target_match['id']}, 路径: {target_match['path']})...")
 
         # 从默认URL中提取base_url
-        base_url = api_url.replace('/magic/web/resource', '')
+        base_url = api_url.replace('/resource', '')
         file_data = fetch_file_detail(target_match['id'], base_url)
         print(format_file_detail(file_data))
         return

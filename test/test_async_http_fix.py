@@ -21,7 +21,7 @@ async def test_async_http_fix():
 
     # 创建客户端实例
     client = MagicAPIDebugClient(
-        ws_url="ws://127.0.0.1:10712/magic/web/console",
+        ws_url="ws://127.0.0.1:10712/console",
         api_base_url="http://127.0.0.1:10712"
     )
 

@@ -41,7 +41,7 @@ class MagicAPIBackupClient:
         Returns:
             备份记录列表
         """
-        url = f"{self.settings.base_url}/magic/web/backups"
+        url = f"{self.settings.base_url}/backups"
         params = {}
         if timestamp:
             params['timestamp'] = timestamp
@@ -72,7 +72,7 @@ class MagicAPIBackupClient:
             print("❌ 备份ID不能为空")
             return []
 
-        url = f"{self.settings.base_url}/magic/web/backup/{backup_id}"
+        url = f"{self.settings.base_url}/backup/{backup_id}"
 
         try:
             response = self.session.get(url, timeout=self.settings.timeout_seconds)
@@ -97,7 +97,7 @@ class MagicAPIBackupClient:
         Returns:
             回滚是否成功
         """
-        url = f"{self.settings.base_url}/magic/web/backup/rollback"
+        url = f"{self.settings.base_url}/backup/rollback"
         data = {
             'id': backup_id,
             'timestamp': timestamp
@@ -126,7 +126,7 @@ class MagicAPIBackupClient:
         Returns:
             备份的脚本内容
         """
-        url = f"{self.settings.base_url}/magic/web/backup"
+        url = f"{self.settings.base_url}/backup"
         params = {
             'id': backup_id,
             'timestamp': timestamp
@@ -151,7 +151,7 @@ class MagicAPIBackupClient:
         Returns:
             备份是否成功
         """
-        url = f"{self.settings.base_url}/magic/web/backup/full"
+        url = f"{self.settings.base_url}/backup/full"
 
         try:
             response = self.session.post(url, timeout=self.settings.timeout_seconds)

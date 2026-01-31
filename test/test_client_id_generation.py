@@ -25,7 +25,7 @@ def test_client_id_generation():
 
     for i in range(5):
         client = MagicAPIDebugClient(
-            ws_url="ws://127.0.0.1:10712/magic/web/console",
+            ws_url="ws://127.0.0.1:10712/console",
             api_base_url="http://127.0.0.1:10712"
         )
         clients.append(client)

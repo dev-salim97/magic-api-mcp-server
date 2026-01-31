@@ -333,7 +333,7 @@ def main():
             sys.exit(1)
 
     # 配置连接信息
-    WS_URL = "ws://127.0.0.1:10712/magic/web/console"
+    WS_URL = "ws://127.0.0.1:10712/console"
     API_BASE_URL = "http://127.0.0.1:10712"
     USERNAME = "admin"
     PASSWORD = "123456"
@@ -438,7 +438,7 @@ def print_usage():
     print("  --help, -h                  显示此帮助信息")
     print("")
     print("配置:")
-    print("  WebSocket URL: ws://127.0.0.1:10712/magic/web/console")
+    print("  WebSocket URL: ws://127.0.0.1:10712/console")
     print("  API Base URL: http://127.0.0.1:10712")
     print("")
     print("功能特性:")

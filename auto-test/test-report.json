@@ -195,7 +195,7 @@
           "success": true,
           "result": {
             "connected": false,
-            "url": "ws://127.0.0.1:10712/magic/web/console"
+            "url": "ws://127.0.0.1:10712/console"
           },
           "duration": 159,
           "attempts": 1

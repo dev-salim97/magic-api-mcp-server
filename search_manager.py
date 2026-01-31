@@ -45,7 +45,7 @@ class MagicAPISearchClient:
             print("❌ 搜索关键词不能为空")
             return []
 
-        url = f"{self.settings.base_url}/magic/web/search"
+        url = f"{self.settings.base_url}/search"
         data = {'keyword': keyword}
 
         try:
@@ -71,7 +71,7 @@ class MagicAPISearchClient:
         Returns:
             TODO 注释列表，每个结果包含 id、text、line 字段
         """
-        url = f"{self.settings.base_url}/magic/web/todo"
+        url = f"{self.settings.base_url}/todo"
 
         try:
             response = self.session.get(url, timeout=self.settings.timeout_seconds)

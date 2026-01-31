@@ -1317,7 +1317,7 @@ EXAMPLES_KNOWLEDGE: Dict[str, Dict[str, Any]] = {
                     // 相关文档： https://www.ssssssss.org/magic-api/pages/module/http/
 
                     // 基本GET请求
-                    var response = http.connect('http://127.0.0.1:10712/magic/web/index.html')
+                    var response = http.connect('http://127.0.0.1:10712/index.html')
                         .get();
 
                     return response.getBody();

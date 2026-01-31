@@ -82,7 +82,7 @@ class BackupService(BaseService):
         if request.timestamp:
             params['timestamp'] = request.timestamp
 
-        ok, response = self.http_client.call_api("GET", "/magic/web/backups", params=params)
+        ok, response = self.http_client.call_api("GET", "/backups", params=params)
         if not ok:
             return BackupOperationResponse(
                 success=False,
@@ -203,7 +203,7 @@ class BackupService(BaseService):
 
     def _get_backup_history_impl(self, request: BackupHistoryRequest) -> BackupOperationResponse:
         """获取备份历史的实现。"""
-        ok, response = self.http_client.call_api("GET", f"/magic/web/backup/{request.backup_id}")
+        ok, response = self.http_client.call_api("GET", f"/backup/{request.backup_id}")
         if not ok:
             return BackupOperationResponse(
                 success=False,
@@ -289,7 +289,7 @@ class BackupService(BaseService):
     def _get_backup_content_impl(self, request: BackupOperationRequest) -> BackupOperationResponse:
         """获取备份内容的实现。"""
         params = {'id': request.backup_id, 'timestamp': request.timestamp}
-        ok, response = self.http_client.call_api("GET", "/magic/web/backup", params=params)
+        ok, response = self.http_client.call_api("GET", "/backup", params=params)
         if not ok:
             return BackupOperationResponse(
                 success=False,
@@ -375,7 +375,7 @@ class BackupService(BaseService):
     def _rollback_backup_impl(self, request: BackupOperationRequest) -> BackupOperationResponse:
         """回滚备份的实现。"""
         rollback_data = {'id': request.backup_id, 'timestamp': request.timestamp}
-        ok, response = self.http_client.call_api("POST", "/magic/web/backup/rollback", data=rollback_data)
+        ok, response = self.http_client.call_api("POST", "/backup/rollback", data=rollback_data)
         if not ok:
             return BackupOperationResponse(
                 success=False,
@@ -445,7 +445,7 @@ class BackupService(BaseService):
 
     def _create_full_backup_impl(self, request: BackupOperationRequest) -> BackupOperationResponse:
         """创建全量备份的实现。"""
-        ok, response = self.http_client.call_api("POST", "/magic/web/backup/full")
+        ok, response = self.http_client.call_api("POST", "/backup/full")
         if not ok:
             return BackupOperationResponse(
                 success=False,
