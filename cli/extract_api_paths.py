@@ -48,9 +48,23 @@ python3 extract_api_paths.py --url --path-to-detail 'db/module/list'    # 自动
 
 import json
 import sys
+import os
 import re
 import subprocess
 from typing import List, Dict, Any, Optional
+
+# 添加项目根目录到路径，以便导入 magicapi_mcp
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    from magicapi_mcp.settings import MagicAPISettings
+except ImportError:
+    # 简单的回退配置类
+    class MagicAPISettings:
+        @staticmethod
+        def from_env():
+            class Settings:
+                base_url = os.environ.get("MAGIC_API_BASE_URL", "http://127.0.0.1:10712")
+            return Settings()
 
 
 def clean_path(path: str) -> str:
@@ -600,7 +614,15 @@ def main():
     # 解析命令行参数
     data_source = None
     use_url = False
-    api_url = 'http://127.0.0.1:10712/resource'  # 默认URL
+    
+    # 使用配置中的 Base URL
+    try:
+        settings = MagicAPISettings.from_env()
+        default_base_url = settings.base_url
+    except:
+        default_base_url = 'http://127.0.0.1:10712'
+        
+    api_url = f"{default_base_url}/resource"  # 默认URL
     method_filter = None
     path_filter = None
     name_filter = None

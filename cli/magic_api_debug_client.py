@@ -31,6 +31,10 @@ import requests
 import threading
 import time
 import sys
+import os
+
+# 添加项目根目录到路径，以便导入 magicapi_mcp
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from magicapi_mcp.settings import MagicAPISettings
 from magicapi_tools.utils.http_client import MagicAPIHTTPClient
@@ -739,10 +743,11 @@ def preprocess_command(command_line):
 async def interactive_debug_session():
     """交互式调试会话"""
     # 配置连接信息
-    WS_URL = "ws://127.0.0.1:10712/console"
-    API_BASE_URL = "http://127.0.0.1:10712"
-    USERNAME = "unauthorization"
-    PASSWORD = "123456"
+    settings = MagicAPISettings.from_env()
+    WS_URL = settings.ws_url
+    API_BASE_URL = settings.base_url
+    USERNAME = settings.username or "unauthorization"
+    PASSWORD = settings.password or "123456"
 
     print("🚀 Magic-API 调试客户端启动")
     print(f"📡 WebSocket URL: {WS_URL}")

@@ -7,10 +7,14 @@ import argparse
 import csv
 import re
 import sys
+import os
 from typing import Any, Dict, List, Optional
 
 import requests
 from urllib.parse import urljoin
+
+# 添加项目根目录到路径，以便导入 magicapi_mcp
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from magicapi_mcp.settings import MagicAPISettings
 from magicapi_tools.utils.http_client import MagicAPIHTTPClient
@@ -21,7 +25,10 @@ class MagicAPIClassExplorerError(Exception):
     pass
 
 
-DEFAULT_BASE_URL = "http://127.0.0.1:10712"
+try:
+    DEFAULT_BASE_URL = MagicAPISettings.from_env().base_url
+except:
+    DEFAULT_BASE_URL = "http://127.0.0.1:10712"
 
 
 def parse_args() -> argparse.Namespace:
